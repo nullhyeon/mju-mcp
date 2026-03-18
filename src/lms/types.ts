@@ -17,6 +17,43 @@ export interface CourseCandidate {
   href: string;
 }
 
+export interface CourseTermRef {
+  year: number;
+  term: number;
+  key: string;
+}
+
+export interface CourseTermSummary extends CourseTermRef {
+  order: number;
+  sourceLabel?: string;
+}
+
+export interface CourseSummary {
+  kjkey: string;
+  title: string;
+  courseCode: string;
+  professor: string;
+  year: number;
+  term: number;
+  termLabel: string;
+  classroomLabel: string;
+  enterPath: string;
+  coverImageUrl?: string;
+}
+
+export interface CourseListResult {
+  mode: "taken";
+  search: string;
+  requested: {
+    year?: number;
+    term?: number;
+    allTerms: boolean;
+  };
+  availableTerms: CourseTermSummary[];
+  selectedTerms: CourseTermSummary[];
+  courses: CourseSummary[];
+}
+
 export interface LoginSnapshotResult {
   loggedIn: boolean;
   usedSavedSession: boolean;

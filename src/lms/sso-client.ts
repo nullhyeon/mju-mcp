@@ -33,6 +33,8 @@ function toDecodedResponse(response: Response<Buffer>): DecodedResponse {
   };
 }
 
+export type FormPayloadValue = string | number | boolean;
+
 export class MjuLmsSsoClient {
   private cookieJar = new CookieJar();
 
@@ -113,9 +115,26 @@ export class MjuLmsSsoClient {
     return toDecodedResponse(response);
   }
 
-  async fetchMainPage(): Promise<DecodedResponse> {
-    const response = await this.http.get(MAIN_URL);
+  async getPage(url: string | URL): Promise<DecodedResponse> {
+    const response = await this.http.get(url.toString(), {
+      responseType: "buffer"
+    });
     return toDecodedResponse(response);
+  }
+
+  async postForm(
+    url: string | URL,
+    form: Record<string, FormPayloadValue>
+  ): Promise<DecodedResponse> {
+    const response = await this.http.post(url.toString(), {
+      responseType: "buffer",
+      form
+    });
+    return toDecodedResponse(response);
+  }
+
+  async fetchMainPage(): Promise<DecodedResponse> {
+    return this.getPage(MAIN_URL);
   }
 
   async saveMainHtml(html: string): Promise<void> {
