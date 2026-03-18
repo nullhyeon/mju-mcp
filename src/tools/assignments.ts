@@ -14,6 +14,7 @@ import type {
   AssignmentListResult
 } from "../lms/types.js";
 import type { AppContext } from "../mcp/app-context.js";
+import { requireCredentials } from "./credentials.js";
 
 const attachmentSchema = {
   name: z.string(),
@@ -40,17 +41,6 @@ const assignmentSubmissionSchema = {
   contentSeq: z.string().optional(),
   attachments: z.array(z.object(attachmentSchema))
 };
-
-function requireCredentials(context: AppContext): { userId: string; password: string } {
-  const { userId, password } = context.lmsConfig;
-  if (!userId || !password) {
-    throw new Error(
-      "LMS 계정 정보가 없습니다. tool 호출 전에 MJU_LMS_USER_ID 와 MJU_LMS_PASSWORD 를 설정해주세요."
-    );
-  }
-
-  return { userId, password };
-}
 
 function formatAssignmentListText(result: AssignmentListResult): string {
   const courseLabel = result.courseTitle
@@ -170,7 +160,7 @@ export function registerAssignmentTools(
       }
     },
     async ({ kjkey, week }, _extra) => {
-      const { userId, password } = requireCredentials(context);
+      const { userId, password } = await requireCredentials(context);
       const client = context.createLmsClient();
       const options: ListAssignmentsOptions = {
         userId,
@@ -221,7 +211,7 @@ export function registerAssignmentTools(
       }
     },
     async ({ kjkey, rtSeq }, _extra) => {
-      const { userId, password } = requireCredentials(context);
+      const { userId, password } = await requireCredentials(context);
       const client = context.createLmsClient();
       const options: GetAssignmentOptions = {
         userId,

@@ -8,6 +8,11 @@
     "node": ">=22.0.0"
   },
   "scripts": {
+    "auth": "tsx src/cli/auth.ts",
+    "auth:forget": "tsx src/cli/auth.ts forget",
+    "auth:login": "tsx src/cli/auth.ts login",
+    "auth:logout": "tsx src/cli/auth.ts logout",
+    "auth:status": "tsx src/cli/auth.ts status",
     "build": "tsc -p tsconfig.json",
     "check": "tsc --noEmit -p tsconfig.json",
     "dev": "tsx src/index.ts",

@@ -9,6 +9,7 @@ import type {
   NoticeListResult
 } from "../lms/types.js";
 import type { AppContext } from "../mcp/app-context.js";
+import { requireCredentials } from "./credentials.js";
 
 const attachmentSchema = {
   name: z.string(),
@@ -27,17 +28,6 @@ const noticeSummarySchema = {
   isUnread: z.boolean(),
   isExpired: z.boolean()
 };
-
-function requireCredentials(context: AppContext): { userId: string; password: string } {
-  const { userId, password } = context.lmsConfig;
-  if (!userId || !password) {
-    throw new Error(
-      "LMS 계정 정보가 없습니다. tool 호출 전에 MJU_LMS_USER_ID 와 MJU_LMS_PASSWORD 를 설정해주세요."
-    );
-  }
-
-  return { userId, password };
-}
 
 function formatAttachments(attachments: LmsAttachment[]): string[] {
   if (attachments.length === 0) {
@@ -164,7 +154,7 @@ export function registerNoticeTools(
       }
     },
     async ({ kjkey, page, pageSize, search }, _extra) => {
-      const { userId, password } = requireCredentials(context);
+      const { userId, password } = await requireCredentials(context);
       const client = context.createLmsClient();
       const options: ListNoticesOptions = {
         userId,
@@ -214,7 +204,7 @@ export function registerNoticeTools(
       }
     },
     async ({ kjkey, articleId }, _extra) => {
-      const { userId, password } = requireCredentials(context);
+      const { userId, password } = await requireCredentials(context);
       const client = context.createLmsClient();
       const options: GetNoticeOptions = {
         userId,

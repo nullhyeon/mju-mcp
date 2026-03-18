@@ -37,4 +37,17 @@ export class SessionStore {
     await fs.mkdir(path.dirname(this.filePath), { recursive: true });
     await fs.writeFile(this.filePath, JSON.stringify(payload, null, 2), "utf8");
   }
+
+  async remove(): Promise<boolean> {
+    try {
+      await fs.rm(this.filePath);
+      return true;
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+        return false;
+      }
+
+      throw error;
+    }
+  }
 }

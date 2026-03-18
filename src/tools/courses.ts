@@ -5,6 +5,7 @@ import { listRegularTakenCourses } from "../lms/courses.js";
 import type { AppContext } from "../mcp/app-context.js";
 import type { ListCoursesOptions } from "../lms/courses.js";
 import type { CourseListResult } from "../lms/types.js";
+import { requireCredentials } from "./credentials.js";
 
 const courseTermSchema = {
   order: z.number(),
@@ -85,13 +86,7 @@ export function registerCourseTools(
       }
     },
     async ({ year, term, search, allTerms }, _extra) => {
-      const { userId, password } = context.lmsConfig;
-      if (!userId || !password) {
-        throw new Error(
-          "LMS 계정 정보가 없습니다. tool 호출 전에 MJU_LMS_USER_ID 와 MJU_LMS_PASSWORD 를 설정해주세요."
-        );
-      }
-
+      const { userId, password } = await requireCredentials(context);
       const client = context.createLmsClient();
       const options: ListCoursesOptions = {
         userId,

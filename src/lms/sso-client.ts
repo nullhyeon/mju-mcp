@@ -60,6 +60,11 @@ export class MjuLmsSsoClient {
     });
   }
 
+  private resetHttpState(): void {
+    this.cookieJar = new CookieJar();
+    this.http = this.buildHttpClient();
+  }
+
   async restoreSavedSession(): Promise<boolean> {
     const restored = await this.sessionStore.load();
     if (!restored) {
@@ -69,6 +74,11 @@ export class MjuLmsSsoClient {
     this.cookieJar = restored;
     this.http = this.buildHttpClient();
     return true;
+  }
+
+  async clearSavedSession(): Promise<boolean> {
+    this.resetHttpState();
+    return this.sessionStore.remove();
   }
 
   async getSsoForm(): Promise<SsoForm> {
@@ -164,10 +174,17 @@ export class MjuLmsSsoClient {
           usedSavedSession: true
         };
       }
+
+      await this.clearSavedSession();
     }
 
     await this.loginSso(userId, password);
     const mainResponse = await this.fetchMainPage();
+    if (looksLoggedIn(mainResponse)) {
+      await this.sessionStore.save(this.cookieJar);
+    } else {
+      await this.clearSavedSession();
+    }
 
     return {
       mainResponse,
@@ -187,11 +204,17 @@ export class MjuLmsSsoClient {
     );
     const loggedIn = looksLoggedIn(mainResponse);
     const courseCandidates = extractCourseCandidates(mainResponse.text);
-    const serializedJar = this.cookieJar.serializeSync();
 
-    await this.sessionStore.save(this.cookieJar);
     await this.saveMainHtml(mainResponse.text);
     await this.saveCourseCandidates(courseCandidates);
+
+    if (loggedIn) {
+      await this.sessionStore.save(this.cookieJar);
+    } else {
+      await this.clearSavedSession();
+    }
+
+    const serializedJar = this.cookieJar.serializeSync();
 
     return {
       loggedIn,
