@@ -325,10 +325,6 @@ export async function checkAssignmentSubmission(
     blockingReasons.push("과제 상세에서 제출하기 버튼을 찾지 못했습니다.");
   }
 
-  if (assignmentDetail.submission) {
-    blockingReasons.push("이미 제출된 과제로 보입니다. 안전을 위해 자동 제출을 차단합니다.");
-  }
-
   if (popupSpec?.requiresTextInput && providedTextLength === 0) {
     blockingReasons.push("제출 본문 텍스트가 비어 있습니다.");
   }
@@ -356,6 +352,12 @@ export async function checkAssignmentSubmission(
   ) {
     warnings.push(
       `과제 목록 상태는 ${summary.statusLabel}${summary.statusText ? ` / ${summary.statusText}` : ""} 로 보이지만, 상세 화면에는 제출 버튼이 노출됩니다. 실제 제출 가능 여부는 버튼 기준으로 다시 확인해야 합니다.`
+    );
+  }
+
+  if (assignmentDetail.submission) {
+    warnings.push(
+      `이미 제출된 과제로 보입니다${assignmentDetail.submission.status ? ` (${assignmentDetail.submission.status})` : ""}. 실제 제출 단계에서 수정 제출 가능 여부를 다시 확인해야 합니다.`
     );
   }
 
