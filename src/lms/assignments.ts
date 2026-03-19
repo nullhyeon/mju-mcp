@@ -150,6 +150,19 @@ function parseSubmissionInfo(
     normalizeText(submitForm.find(".submit_info_box .date").first().text()) || undefined;
   const text =
     normalizeText(submitForm.find(".inner_content_wrap .content").first().text()) || undefined;
+  const placeholderText =
+    normalizeText(submitForm.find(".inner_content_wrap > span").first().text()) ||
+    undefined;
+
+  if (
+    placeholderText === "제출된 내역이 없습니다." &&
+    !status &&
+    !submittedAt &&
+    !text &&
+    attachments.length === 0
+  ) {
+    return undefined;
+  }
 
   if (!status && !submittedAt && !text && attachments.length === 0 && !submissionContentSeq) {
     return undefined;

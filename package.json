@@ -8,6 +8,7 @@
     "node": ">=22.0.0"
   },
   "scripts": {
+    "assignment:delete": "tsx src/cli/assignment-submit.ts delete",
     "assignment:submit": "tsx src/cli/assignment-submit.ts submit",
     "assignment:submit:check": "tsx src/cli/assignment-submit.ts check",
     "auth": "tsx src/cli/auth.ts",
