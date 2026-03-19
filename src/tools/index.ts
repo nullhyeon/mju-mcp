@@ -11,6 +11,7 @@ import { registerMaterialTools } from "./materials.js";
 import { registerMsiTools } from "./msi.js";
 import { registerNoticeTools } from "./notices.js";
 import { registerOnlineTools } from "./online.js";
+import { registerUcheckTools } from "./ucheck.js";
 
 export function registerMjuLmsTools(
   server: McpServer,
@@ -26,4 +27,5 @@ export function registerMjuLmsTools(
   registerMsiTools(server, context);
   registerNoticeTools(server, context);
   registerOnlineTools(server, context);
+  registerUcheckTools(server, context);
 }

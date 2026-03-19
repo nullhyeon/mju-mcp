@@ -6,6 +6,11 @@ import { resolveLmsRuntimeConfig, type LmsRuntimeConfig } from "../config.js";
 import { MjuLmsSsoClient } from "../lms/sso-client.js";
 import { resolveMsiRuntimeConfig, type MsiRuntimeConfig } from "../msi/config.js";
 import { MjuMsiClient } from "../msi/client.js";
+import {
+  resolveUcheckRuntimeConfig,
+  type UcheckRuntimeConfig
+} from "../ucheck/config.js";
+import { MjuUcheckClient } from "../ucheck/client.js";
 
 export interface LastCourseContext {
   kjkey: string;
@@ -33,9 +38,11 @@ interface SessionState {
 export interface AppContext {
   lmsConfig: LmsRuntimeConfig;
   msiConfig: MsiRuntimeConfig;
+  ucheckConfig: UcheckRuntimeConfig;
   authManager: AuthManager;
   createLmsClient(): MjuLmsSsoClient;
   createMsiClient(): MjuMsiClient;
+  createUcheckClient(): MjuUcheckClient;
   getCredentials(): Promise<ResolvedLmsCredentials>;
   getLastCourseContext(sessionId?: string): LastCourseContext | undefined;
   setLastCourseContext(
@@ -63,6 +70,10 @@ export interface AppContext {
 export function createAppContext(
   lmsConfig: LmsRuntimeConfig = resolveLmsRuntimeConfig(),
   msiConfig: MsiRuntimeConfig = resolveMsiRuntimeConfig({
+    appDataDir: lmsConfig.appDataDir,
+    userAgent: lmsConfig.userAgent
+  }),
+  ucheckConfig: UcheckRuntimeConfig = resolveUcheckRuntimeConfig({
     appDataDir: lmsConfig.appDataDir,
     userAgent: lmsConfig.userAgent
   })
@@ -98,12 +109,16 @@ export function createAppContext(
   return {
     lmsConfig,
     msiConfig,
+    ucheckConfig,
     authManager,
     createLmsClient() {
       return new MjuLmsSsoClient(lmsConfig);
     },
     createMsiClient() {
       return new MjuMsiClient(msiConfig);
+    },
+    createUcheckClient() {
+      return new MjuUcheckClient(ucheckConfig);
     },
     getCredentials() {
       return authManager.resolveCredentials();
