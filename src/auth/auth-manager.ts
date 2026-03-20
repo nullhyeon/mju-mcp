@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 
-import type { LmsRuntimeConfig } from "../config.js";
+import type { LmsRuntimeConfig } from "../lms/config.js";
 import type { LoginSnapshotResult } from "../lms/types.js";
 import { MjuLmsSsoClient } from "../lms/sso-client.js";
 import { buildCredentialTarget, type PasswordVault } from "./password-vault.js";

@@ -1,6 +1,6 @@
 import { parseArgs } from "node:util";
 
-import { resolveLmsRuntimeConfig } from "../config.js";
+import { resolveLmsRuntimeConfig } from "../lms/config.js";
 import { MjuLmsSsoClient } from "../lms/sso-client.js";
 
 const USAGE = [

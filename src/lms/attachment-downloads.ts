@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import type { LmsRuntimeConfig } from "../config.js";
+import type { LmsRuntimeConfig } from "./config.js";
 import { getCourseAssignment } from "./assignments.js";
 import {
   downloadAttachmentToDirectory,

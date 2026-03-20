@@ -1,9 +1,9 @@
 import path from "node:path";
 
 import {
-  buildAppStoragePaths,
+  buildAppStorageDirs,
   resolveDefaultAppDataDir
-} from "./auth/paths.js";
+} from "../shared/storage-paths.js";
 
 const DEFAULT_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0 Safari/537.36";
@@ -49,7 +49,7 @@ export function resolveLmsRuntimeConfig(
   const appDataDir = path.resolve(
     cleanPathValue(overrides.appDataDir) ?? resolveDefaultAppDataDir()
   );
-  const storagePaths = buildAppStoragePaths(appDataDir);
+  const storageDirs = buildAppStorageDirs(appDataDir);
 
   return {
     appDataDir,
@@ -58,27 +58,27 @@ export function resolveLmsRuntimeConfig(
     profileFile: path.resolve(
       cleanPathValue(overrides.profileFile) ??
         cleanPathValue(process.env.MJU_LMS_PROFILE_FILE) ??
-        storagePaths.profileFile
+        path.join(storageDirs.stateDir, "profile.json")
     ),
     sessionFile: path.resolve(
       cleanPathValue(overrides.sessionFile) ??
         cleanPathValue(process.env.MJU_LMS_SESSION_FILE) ??
-        storagePaths.sessionFile
+        path.join(storageDirs.stateDir, "lms-session.json")
     ),
     mainHtmlFile: path.resolve(
       cleanPathValue(overrides.mainHtmlFile) ??
         cleanPathValue(process.env.MJU_LMS_MAIN_HTML_FILE) ??
-        storagePaths.mainHtmlFile
+        path.join(storageDirs.snapshotDir, "main.html")
     ),
     coursesFile: path.resolve(
       cleanPathValue(overrides.coursesFile) ??
         cleanPathValue(process.env.MJU_LMS_COURSES_FILE) ??
-        storagePaths.coursesFile
+        path.join(storageDirs.snapshotDir, "courses.json")
     ),
     downloadsDir: path.resolve(
       cleanPathValue(overrides.downloadsDir) ??
         cleanPathValue(process.env.MJU_LMS_DOWNLOADS_DIR) ??
-        storagePaths.downloadsDir
+        storageDirs.downloadsDir
     ),
     credentialServiceName:
       clean(

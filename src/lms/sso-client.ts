@@ -5,7 +5,7 @@ import { load } from "cheerio";
 import got, { type Response } from "got";
 import { CookieJar } from "tough-cookie";
 
-import type { LmsRuntimeConfig } from "../config.js";
+import type { LmsRuntimeConfig } from "./config.js";
 import { looksLoggedIn } from "./auth-heuristics.js";
 import { MAIN_URL, SSO_BASE, SSO_ENTRY } from "./constants.js";
 import { extractCourseCandidates } from "./course-links.js";

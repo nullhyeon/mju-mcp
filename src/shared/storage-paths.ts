@@ -1,15 +1,11 @@
 import os from "node:os";
 import path from "node:path";
 
-export interface AppStoragePaths {
+export interface AppStorageDirs {
   rootDir: string;
   stateDir: string;
   snapshotDir: string;
   downloadsDir: string;
-  profileFile: string;
-  sessionFile: string;
-  mainHtmlFile: string;
-  coursesFile: string;
 }
 
 function clean(value: string | undefined): string | undefined {
@@ -35,20 +31,13 @@ export function resolveDefaultAppDataDir(
   return path.resolve(os.homedir(), ".mju-mcp");
 }
 
-export function buildAppStoragePaths(rootDir: string): AppStoragePaths {
+export function buildAppStorageDirs(rootDir: string): AppStorageDirs {
   const resolvedRoot = path.resolve(rootDir);
-  const stateDir = path.join(resolvedRoot, "state");
-  const snapshotDir = path.join(resolvedRoot, "snapshots");
-  const downloadsDir = path.join(resolvedRoot, "downloads");
 
   return {
     rootDir: resolvedRoot,
-    stateDir,
-    snapshotDir,
-    downloadsDir,
-    profileFile: path.join(stateDir, "profile.json"),
-    sessionFile: path.join(stateDir, "session.json"),
-    mainHtmlFile: path.join(snapshotDir, "main.html"),
-    coursesFile: path.join(snapshotDir, "courses.json")
+    stateDir: path.join(resolvedRoot, "state"),
+    snapshotDir: path.join(resolvedRoot, "snapshots"),
+    downloadsDir: path.join(resolvedRoot, "downloads")
   };
 }

@@ -2,7 +2,10 @@ import { randomUUID } from "node:crypto";
 
 import { AuthManager } from "../auth/auth-manager.js";
 import type { ResolvedLmsCredentials } from "../auth/types.js";
-import { resolveLmsRuntimeConfig, type LmsRuntimeConfig } from "../config.js";
+import {
+  resolveLmsRuntimeConfig,
+  type LmsRuntimeConfig
+} from "../lms/config.js";
 import { MjuLmsSsoClient } from "../lms/sso-client.js";
 import { resolveMsiRuntimeConfig, type MsiRuntimeConfig } from "../msi/config.js";
 import { MjuMsiClient } from "../msi/client.js";

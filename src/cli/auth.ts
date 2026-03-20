@@ -1,7 +1,7 @@
 import { parseArgs } from "node:util";
 
 import { AuthManager } from "../auth/auth-manager.js";
-import { resolveLmsRuntimeConfig } from "../config.js";
+import { resolveLmsRuntimeConfig } from "../lms/config.js";
 
 const USAGE = [
   "Usage:",

@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import { parseArgs } from "node:util";
 
-import { resolveLmsRuntimeConfig } from "../config.js";
+import { resolveLmsRuntimeConfig } from "../lms/config.js";
 import {
   checkAssignmentSubmission,
   deleteAssignment,

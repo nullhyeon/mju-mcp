@@ -1,6 +1,9 @@
 import path from "node:path";
 
-import { resolveDefaultAppDataDir } from "../auth/paths.js";
+import {
+  buildAppStorageDirs,
+  resolveDefaultAppDataDir
+} from "../shared/storage-paths.js";
 
 const DEFAULT_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0 Safari/537.36";
@@ -34,23 +37,24 @@ export function resolveMsiRuntimeConfig(
       clean(process.env.MJU_MSI_APP_DIR) ??
       resolveDefaultAppDataDir(clean(process.env.MJU_LMS_APP_DIR))
   );
+  const storageDirs = buildAppStorageDirs(appDataDir);
 
   return {
     appDataDir,
     sessionFile: path.resolve(
       clean(overrides.sessionFile) ??
         clean(process.env.MJU_MSI_SESSION_FILE) ??
-        path.join(appDataDir, "state", "msi-session.json")
+        path.join(storageDirs.stateDir, "msi-session.json")
     ),
     mainHtmlFile: path.resolve(
       clean(overrides.mainHtmlFile) ??
         clean(process.env.MJU_MSI_MAIN_HTML_FILE) ??
-        path.join(appDataDir, "snapshots", "msi-main.html")
+        path.join(storageDirs.snapshotDir, "msi-main.html")
     ),
     menuSnapshotFile: path.resolve(
       clean(overrides.menuSnapshotFile) ??
         clean(process.env.MJU_MSI_MENU_FILE) ??
-        path.join(appDataDir, "snapshots", "msi-menu.json")
+        path.join(storageDirs.snapshotDir, "msi-menu.json")
     ),
     userAgent:
       clean(overrides.userAgent) ??
