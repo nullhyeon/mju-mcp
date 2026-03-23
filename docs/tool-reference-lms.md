@@ -161,6 +161,7 @@
 | Tool | 용도 | 핵심 입력 |
 | --- | --- | --- |
 | `mju_lms_download_attachment` | 첨부파일을 로컬에 저장 | `kind`, `course?`, `kjkey?`, `articleId?`, `rtSeq?`, `attachmentIndex?`, `attachmentKind?`, `outputDir?` |
+| `mju_lms_download_attachments_bulk` | 여러 항목의 첨부파일을 한 번에 로컬 저장 | `kind`, `course?`, `kjkey?`, `articleId?`/`articleIds?`, `rtSeq?`/`rtSeqs?`, `attachmentKind?`, `outputDir?` |
 
 지원 대상:
 
@@ -168,10 +169,18 @@
 - `kind: "material"`
 - `kind: "assignment"` + `attachmentKind: "prompt" | "submission"`
 
+bulk tool 규칙:
+
+- `notice`, `material` 은 `articleId` 또는 `articleIds` 를 사용합니다.
+- `assignment` 는 `rtSeq` 또는 `rtSeqs` 를 사용합니다.
+- 여러 항목을 한 번에 받으면 `outputDir/<item-id>/` 하위로 나눠 저장합니다.
+- 첨부가 없는 항목은 전체 실패 대신 경고로 반환합니다.
+
 ## 10. 집약형 요약
 
 | Tool | 용도 | 핵심 입력 |
 | --- | --- | --- |
+| `mju_lms_get_course_digest` | 한 강의의 공지/자료/과제/온라인 상태 종합 | `course?`, `kjkey?`, `days?`, `limit?` |
 | `mju_lms_get_unsubmitted_assignments` | 미제출 과제만 모아보기 | `course?`, `kjkey?`, `allCourses?` |
 | `mju_lms_get_due_assignments` | 마감 임박 과제 모아보기 | `course?`, `kjkey?`, `allCourses?`, `days?`, `includeSubmitted?` |
 | `mju_lms_get_action_items` | 미제출/마감임박/안읽은공지/미수강학습 종합 | `course?`, `kjkey?`, `allCourses?`, `days?` |
@@ -179,6 +188,14 @@
 | `mju_lms_get_incomplete_online_weeks` | 미수강 온라인 학습 모아보기 | `course?`, `kjkey?`, `allCourses?` |
 
 `allCourses=true` 는 전체 이력이 아니라 최신 학기의 모든 강의를 묶는 의미입니다.
+
+`mju_lms_get_course_digest` 반환 핵심:
+
+- 안읽은 공지 수와 일부 항목
+- 최근 자료 수와 일부 항목
+- 미제출 과제 수와 일부 항목
+- 지정 일수 이내 마감 과제 수와 일부 항목
+- 미수강 온라인 학습 수와 일부 항목
 
 ## 11. 대표 예시
 
@@ -201,6 +218,32 @@
   "arguments": {
     "course": "캡스톤디자인",
     "rtSeq": 9945057
+  }
+}
+```
+
+### 강의 종합 요약
+
+```json
+{
+  "name": "mju_lms_get_course_digest",
+  "arguments": {
+    "course": "캡스톤디자인",
+    "days": 7,
+    "limit": 5
+  }
+}
+```
+
+### 첨부 bulk 다운로드
+
+```json
+{
+  "name": "mju_lms_download_attachments_bulk",
+  "arguments": {
+    "kind": "material",
+    "course": "캡스톤디자인",
+    "articleIds": [9924534, 9929323]
   }
 }
 ```

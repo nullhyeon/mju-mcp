@@ -3,10 +3,12 @@ import * as z from "zod/v4";
 
 import { getCourseAssignment, listCourseAssignments } from "../lms/assignments.js";
 import { listRegularTakenCourses } from "../lms/courses.js";
+import { listCourseMaterials } from "../lms/materials.js";
 import { listCourseNotices } from "../lms/notices.js";
 import { getCourseOnlineWeek, listCourseOnlineWeeks } from "../lms/online.js";
 import type {
   AssignmentSummary,
+  MaterialSummary,
   NoticeSummary,
   OnlineWeekSummary
 } from "../lms/types.js";
@@ -20,6 +22,7 @@ import {
 import { requireCredentials } from "./credentials.js";
 
 const DEFAULT_DUE_DAYS = 7;
+const DEFAULT_DIGEST_LIMIT = 5;
 const NOTICE_PAGE_SIZE = 50;
 const MAX_NOTICE_PAGES = 20;
 
@@ -82,6 +85,14 @@ interface AggregateOnlineWeekItem {
   totalItems: number;
   incompleteItems: number;
 }
+
+const materialSummarySchema = {
+  articleId: z.number().int(),
+  title: z.string(),
+  week: z.number().int().optional(),
+  weekLabel: z.string().optional(),
+  attachmentCount: z.number().int().optional()
+};
 
 const aggregateAssignmentSchema = {
   kjkey: z.string(),
@@ -632,6 +643,35 @@ async function collectDueAssignments(
   return aggregated.sort((left, right) => left.dueAtIso.localeCompare(right.dueAtIso));
 }
 
+function formatDigestSectionTitle(
+  label: string,
+  total: number,
+  shown: number
+): string {
+  if (total > shown) {
+    return `${label} ${total}건 (상위 ${shown}건 표시)`;
+  }
+
+  return `${label} ${total}건`;
+}
+
+function formatMaterialItems(
+  items: MaterialSummary[],
+  emptyText: string
+): string[] {
+  if (items.length === 0) {
+    return [emptyText];
+  }
+
+  return items.map((item) => {
+    const meta = [
+      item.weekLabel,
+      item.attachmentCount !== undefined ? `첨부 ${item.attachmentCount}개` : undefined
+    ].filter(Boolean);
+    return `- [${item.articleId}] ${item.title}${meta.length > 0 ? ` | ${meta.join(" | ")}` : ""}`;
+  });
+}
+
 function formatAssignmentItems(
   items: AggregateAssignmentItem[],
   emptyText: string
@@ -774,10 +814,252 @@ function formatActionItemsText(result: {
   ].join("\n");
 }
 
+function formatCourseDigestText(result: {
+  courseTitle?: string;
+  kjkey: string;
+  counts: {
+    unreadNotices: number;
+    materials: number;
+    unsubmittedAssignments: number;
+    dueAssignments: number;
+    incompleteOnlineWeeks: number;
+  };
+  unreadNotices: AggregateNoticeItem[];
+  materials: MaterialSummary[];
+  unsubmittedAssignments: AggregateAssignmentItem[];
+  dueAssignments: DueAssignmentItem[];
+  incompleteOnlineWeeks: AggregateOnlineWeekItem[];
+  days: number;
+}): string {
+  const courseLabel = result.courseTitle
+    ? `${result.courseTitle} (${result.kjkey})`
+    : result.kjkey;
+
+  return [
+    `${courseLabel} 강의 요약`,
+    "",
+    formatDigestSectionTitle(
+      "안읽은 공지",
+      result.counts.unreadNotices,
+      result.unreadNotices.length
+    ),
+    ...formatNoticeItems(result.unreadNotices, "안읽은 공지가 없습니다."),
+    "",
+    formatDigestSectionTitle(
+      "최근 자료",
+      result.counts.materials,
+      result.materials.length
+    ),
+    ...formatMaterialItems(result.materials, "조회 가능한 자료가 없습니다."),
+    "",
+    formatDigestSectionTitle(
+      "미제출 과제",
+      result.counts.unsubmittedAssignments,
+      result.unsubmittedAssignments.length
+    ),
+    ...formatAssignmentItems(
+      result.unsubmittedAssignments,
+      "미제출 과제가 없습니다."
+    ),
+    "",
+    formatDigestSectionTitle(
+      `${result.days}일 이내 마감 과제`,
+      result.counts.dueAssignments,
+      result.dueAssignments.length
+    ),
+    ...formatDueAssignmentItems(
+      result.dueAssignments,
+      "조건에 맞는 마감 임박 과제가 없습니다."
+    ),
+    "",
+    formatDigestSectionTitle(
+      "미수강 온라인 학습",
+      result.counts.incompleteOnlineWeeks,
+      result.incompleteOnlineWeeks.length
+    ),
+    ...formatOnlineWeekItems(
+      result.incompleteOnlineWeeks,
+      "미수강 온라인 학습이 없습니다."
+    )
+  ].join("\n");
+}
+
 export function registerAggregateTools(
   server: McpServer,
   context: AppContext
 ): void {
+  server.registerTool(
+    "mju_lms_get_course_digest",
+    {
+      title: "강의 종합 요약",
+      description:
+        "특정 강의의 안읽은 공지, 최근 자료, 미제출 과제, 마감 임박 과제, 미수강 온라인 학습을 한 번에 요약합니다.",
+      inputSchema: {
+        ...courseReferenceInputSchemaShape,
+        days: z
+          .number()
+          .int()
+          .positive()
+          .optional()
+          .describe("지금부터 며칠 이내 마감 과제를 digest에 포함할지 지정합니다. 기본값은 7입니다."),
+        limit: z
+          .number()
+          .int()
+          .positive()
+          .max(20)
+          .optional()
+          .describe("각 섹션에 표시할 최대 항목 수입니다. 기본값은 5입니다.")
+      },
+      outputSchema: {
+        kjkey: z.string(),
+        courseTitle: z.string().optional(),
+        courseCode: z.string().optional(),
+        year: z.number().int().optional(),
+        term: z.number().int().optional(),
+        termLabel: z.string().optional(),
+        days: z.number().int(),
+        limit: z.number().int(),
+        counts: z.object({
+          unreadNotices: z.number().int(),
+          materials: z.number().int(),
+          unsubmittedAssignments: z.number().int(),
+          dueAssignments: z.number().int(),
+          incompleteOnlineWeeks: z.number().int()
+        }),
+        unreadNotices: z.array(z.object(aggregateNoticeSchema)),
+        materials: z.array(z.object(materialSummarySchema)),
+        unsubmittedAssignments: z.array(z.object(aggregateAssignmentSchema)),
+        dueAssignments: z.array(z.object(dueAssignmentSchema)),
+        incompleteOnlineWeeks: z.array(z.object(aggregateOnlineWeekSchema))
+      }
+    },
+    async ({ course, kjkey, days, limit }, extra) => {
+      const credentials = await requireCredentials(context);
+      const client = context.createLmsClient();
+      const scope = await resolveCourseScope(context, extra, client, credentials, {
+        ...(course !== undefined ? { course } : {}),
+        ...(kjkey !== undefined ? { kjkey } : {})
+      });
+      const selectedCourse = scope.courses[0];
+      if (!selectedCourse) {
+        throw new Error("digest 대상 강의를 찾지 못했습니다.");
+      }
+
+      const digestDays = days ?? DEFAULT_DUE_DAYS;
+      const digestLimit = limit ?? DEFAULT_DIGEST_LIMIT;
+      const assignmentsResult = await listCourseAssignments(client, {
+        userId: credentials.userId,
+        password: credentials.password,
+        kjkey: selectedCourse.kjkey
+      });
+      const allUnreadNotices = await collectUnreadNotices(client, credentials, [
+        selectedCourse
+      ]);
+      const materialsResult = await listCourseMaterials(client, {
+        userId: credentials.userId,
+        password: credentials.password,
+        kjkey: selectedCourse.kjkey
+      });
+      const dueAssignments = await collectDueAssignments(
+        client,
+        credentials,
+        [selectedCourse],
+        {
+          days: digestDays,
+          includeSubmitted: false
+        }
+      );
+      const incompleteOnlineWeeks = await collectIncompleteOnlineWeeks(
+        client,
+        credentials,
+        [selectedCourse]
+      );
+
+      const unsubmittedAssignments = assignmentsResult.assignments
+        .filter((assignment) => assignment.isSubmitted === false)
+        .map((assignment) =>
+          toAggregateAssignment(
+            selectedCourse,
+            assignment,
+            assignmentsResult.courseTitle
+          )
+        );
+      const displayedUnreadNotices = allUnreadNotices.slice(0, digestLimit);
+      const displayedMaterials = materialsResult.materials.slice(0, digestLimit);
+      const displayedUnsubmittedAssignments = unsubmittedAssignments.slice(
+        0,
+        digestLimit
+      );
+      const displayedDueAssignments = dueAssignments.slice(0, digestLimit);
+      const displayedIncompleteOnlineWeeks = incompleteOnlineWeeks.slice(
+        0,
+        digestLimit
+      );
+      const courseTitle =
+        assignmentsResult.courseTitle ??
+        materialsResult.courseTitle ??
+        displayedUnreadNotices[0]?.courseTitle ??
+        displayedDueAssignments[0]?.courseTitle ??
+        displayedIncompleteOnlineWeeks[0]?.courseTitle ??
+        selectedCourse.courseTitle;
+
+      rememberSingleScope(context, extra, scope, {
+        ...(courseTitle ? { courseTitle } : {}),
+        ...(selectedCourse.courseCode ? { courseCode: selectedCourse.courseCode } : {}),
+        ...(selectedCourse.year !== undefined ? { year: selectedCourse.year } : {}),
+        ...(selectedCourse.term !== undefined ? { term: selectedCourse.term } : {}),
+        ...(selectedCourse.termLabel ? { termLabel: selectedCourse.termLabel } : {})
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: formatCourseDigestText({
+              ...(courseTitle ? { courseTitle } : {}),
+              kjkey: selectedCourse.kjkey,
+              counts: {
+                unreadNotices: allUnreadNotices.length,
+                materials: materialsResult.materials.length,
+                unsubmittedAssignments: unsubmittedAssignments.length,
+                dueAssignments: dueAssignments.length,
+                incompleteOnlineWeeks: incompleteOnlineWeeks.length
+              },
+              unreadNotices: displayedUnreadNotices,
+              materials: displayedMaterials,
+              unsubmittedAssignments: displayedUnsubmittedAssignments,
+              dueAssignments: displayedDueAssignments,
+              incompleteOnlineWeeks: displayedIncompleteOnlineWeeks,
+              days: digestDays
+            })
+          }
+        ],
+        structuredContent: {
+          kjkey: selectedCourse.kjkey,
+          ...(courseTitle ? { courseTitle } : {}),
+          ...(selectedCourse.courseCode ? { courseCode: selectedCourse.courseCode } : {}),
+          ...(selectedCourse.year !== undefined ? { year: selectedCourse.year } : {}),
+          ...(selectedCourse.term !== undefined ? { term: selectedCourse.term } : {}),
+          ...(selectedCourse.termLabel ? { termLabel: selectedCourse.termLabel } : {}),
+          days: digestDays,
+          limit: digestLimit,
+          counts: {
+            unreadNotices: allUnreadNotices.length,
+            materials: materialsResult.materials.length,
+            unsubmittedAssignments: unsubmittedAssignments.length,
+            dueAssignments: dueAssignments.length,
+            incompleteOnlineWeeks: incompleteOnlineWeeks.length
+          },
+          unreadNotices: displayedUnreadNotices,
+          materials: displayedMaterials,
+          unsubmittedAssignments: displayedUnsubmittedAssignments,
+          dueAssignments: displayedDueAssignments,
+          incompleteOnlineWeeks: displayedIncompleteOnlineWeeks
+        }
+      };
+    }
+  );
+
   server.registerTool(
     "mju_lms_get_unsubmitted_assignments",
     {

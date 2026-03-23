@@ -11,23 +11,6 @@
 
 읽기 기능이 중심이지만, LMS 과제 제출/수정/삭제와 도서관 스터디룸 예약/수정/취소처럼 실제 상태를 바꾸는 기능도 일부 지원합니다. 쓰기 tool은 모두 보수적인 승인 흐름을 거칩니다.
 
-## 주요 특징
-
-- 명지대 계열 통합 자격증명 재사용
-- 저장 세션 재사용
-- OS 보안 저장소 기반 저장 로그인
-- stdio 기반 MCP 서버
-- LMS 강의 식별 UX 개선
-  - `course` 또는 `kjkey`
-  - 같은 세션의 마지막 강의 기본값
-- LMS 쓰기 tool 2단계 승인
-  - `confirm=true`
-  - `approvalToken`
-- 도서관 스터디룸 동행자 이름/학번 -> 내부 patron id 자동 해석
-- 도서관 열람실 좌석 목록/예약 가능 구간 조회
-- 자연도서관 열람실 좌석 번호 -> 문 기준 위치 설명
-- LMS, MSI, UCheck, Library 세션 분리 저장
-
 ## 빠른 시작
 
 ### 1. 설치
@@ -91,6 +74,8 @@ npm run login:sso -- --id YOUR_ID --password YOUR_PASSWORD
 - `mju_lms_list_online_weeks`
 - `mju_lms_get_online_week`
 - `mju_lms_download_attachment`
+- `mju_lms_download_attachments_bulk`
+- `mju_lms_get_course_digest`
 - `mju_lms_get_unsubmitted_assignments`
 - `mju_lms_get_due_assignments`
 - `mju_lms_get_action_items`
@@ -149,7 +134,3 @@ npm run login:sso -- --id YOUR_ID --password YOUR_PASSWORD
 - 자연도서관 열람실 좌석 위치 설명은 실배치도와 문 위치 메타데이터를 대조해 검증된 방만 지원합니다.
 - 문서와 커밋에는 실계정 비밀번호, 세션 파일, 스냅샷 HTML을 넣지 않습니다.
 - 실데이터 검증은 가능하지만, 운영 상태를 바꾸는 호출은 항상 신중하게 수행해야 합니다.
-
-## 상태 메모
-
-이 저장소는 더 이상 “초기 부트스트랩 단계”가 아닙니다. LMS, MSI, UCheck, Library 각각에 대해 실제 데이터를 기준으로 반복 검증된 기능을 제공하는 실사용 중심 MCP 서버입니다.
