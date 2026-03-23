@@ -5,12 +5,14 @@ import type { LoginSnapshotResult } from "../lms/types.js";
 import { MjuLmsSsoClient } from "../lms/sso-client.js";
 import { buildCredentialTarget, type PasswordVault } from "./password-vault.js";
 import { AuthProfileStore } from "./profile-store.js";
+import { MacOsKeychainVault } from "./macos-keychain-vault.js";
 import type {
   AuthStatus,
   ForgetResult,
   LoginStoreResult,
   LogoutResult,
   ResolvedLmsCredentials,
+  StoredAuthMode,
   StoredAuthProfile
 } from "./types.js";
 import { WindowsCredentialVault } from "./windows-credential-vault.js";
@@ -30,15 +32,17 @@ export interface StoredLoginResult extends LoginStoreResult {
 }
 
 class UnsupportedPasswordVault implements PasswordVault {
+  readonly authMode = "unsupported" as const;
+
   async savePassword(): Promise<void> {
     throw new Error(
-      "저장 로그인은 현재 Windows Credential Manager 기반으로만 지원됩니다."
+      "저장 로그인은 현재 Windows Credential Manager 또는 macOS Keychain 기반으로만 지원됩니다."
     );
   }
 
   async getPassword(): Promise<string | null> {
     throw new Error(
-      "저장된 비밀번호 읽기는 현재 Windows Credential Manager 기반으로만 지원됩니다."
+      "저장된 비밀번호 읽기는 현재 Windows Credential Manager 또는 macOS Keychain 기반으로만 지원됩니다."
     );
   }
 
@@ -56,7 +60,21 @@ function createDefaultPasswordVault(): PasswordVault {
     return new WindowsCredentialVault();
   }
 
+  if (process.platform === "darwin") {
+    return new MacOsKeychainVault();
+  }
+
   return new UnsupportedPasswordVault();
+}
+
+function resolveStoredAuthMode(vault: PasswordVault): StoredAuthMode {
+  if (vault.authMode === "unsupported") {
+    throw new Error(
+      "현재 운영체제에서는 저장 로그인 비밀번호 보관소를 지원하지 않습니다."
+    );
+  }
+
+  return vault.authMode;
 }
 
 export class AuthManager {
@@ -78,25 +96,6 @@ export class AuthManager {
   }
 
   async resolveCredentials(): Promise<ResolvedLmsCredentials> {
-    const explicitUserId = clean(this.config.userId);
-    const explicitPassword = clean(this.config.password);
-    const hasExplicitUserId = Boolean(explicitUserId);
-    const hasExplicitPassword = Boolean(explicitPassword);
-
-    if (hasExplicitUserId || hasExplicitPassword) {
-      if (!explicitUserId || !explicitPassword) {
-        throw new Error(
-          "환경 변수 인증정보는 MJU_LMS_USER_ID 와 MJU_LMS_PASSWORD 를 함께 설정해야 합니다."
-        );
-      }
-
-      return {
-        userId: explicitUserId,
-        password: explicitPassword,
-        source: "env"
-      };
-    }
-
     const profile = await this.profileStore.load();
     if (!profile) {
       throw new Error(
@@ -154,7 +153,7 @@ export class AuthManager {
     const now = new Date().toISOString();
     const profile: StoredAuthProfile = {
       userId: normalizedUserId,
-      authMode: "windows-credential-manager",
+      authMode: resolveStoredAuthMode(this.passwordVault),
       createdAt:
         existingProfile?.userId === normalizedUserId
           ? existingProfile.createdAt
@@ -177,8 +176,6 @@ export class AuthManager {
   async status(): Promise<AuthStatus> {
     const profile = await this.profileStore.load();
     const sessionFileExists = await fileExists(this.config.sessionFile);
-    const envUserId = clean(this.config.userId);
-    const envPassword = clean(this.config.password);
 
     const credentialTarget = profile
       ? this.getCredentialTarget(profile.userId)
@@ -192,15 +189,12 @@ export class AuthManager {
       ...(credentialTarget ? { credentialTarget } : {}),
       profileExists: profile !== null,
       ...(profile ? { storedUserId: profile.userId } : {}),
+      ...(profile ? { authMode: profile.authMode } : {}),
       passwordStored:
         credentialTarget !== undefined
           ? await this.passwordVault.hasPassword(credentialTarget)
           : false,
-      sessionFileExists,
-      envUserIdSet: Boolean(envUserId),
-      envPasswordSet: Boolean(envPassword),
-      envCredentialsReady: Boolean(envUserId && envPassword),
-      envCredentialsPartial: Boolean(envUserId) !== Boolean(envPassword)
+      sessionFileExists
     };
   }
 

@@ -6,9 +6,9 @@
 
 - Node.js 22 이상
 - npm
-- Windows 권장
+- Windows 또는 macOS
 
-Windows에서는 저장 로그인 기능이 Windows Credential Manager를 사용합니다. 다른 OS에서도 실행은 가능하지만, 저장 로그인 대신 환경 변수 방식이 더 단순합니다.
+Windows에서는 Windows Credential Manager, macOS에서는 Keychain을 사용합니다.
 
 ## 2. 설치
 
@@ -22,7 +22,7 @@ npm run build
 
 ## 3. 인증 방식
 
-지원하는 인증 방식은 두 가지입니다.
+지원하는 인증 방식은 저장 로그인입니다.
 
 ### 3.1 저장 로그인
 
@@ -35,7 +35,7 @@ npm run auth:login -- --id YOUR_ID --password YOUR_PASSWORD
 이 방식의 저장 위치는 다음과 같습니다.
 
 - 아이디: `%LOCALAPPDATA%\\mju-mcp\\state\\profile.json`
-- 비밀번호: Windows Credential Manager
+- 비밀번호: Windows Credential Manager 또는 macOS Keychain
 - LMS 세션: `%LOCALAPPDATA%\\mju-mcp\\state\\lms-session.json`
 - MSI 세션: `%LOCALAPPDATA%\\mju-mcp\\state\\msi-session.json`
 - UCheck 세션: `%LOCALAPPDATA%\\mju-mcp\\state\\ucheck-session.json`
@@ -58,13 +58,6 @@ npm run auth:logout
 ```bash
 npm run auth:forget
 ```
-
-### 3.2 환경 변수
-
-간단히 실행만 확인할 때는 환경 변수도 충분합니다.
-
-- `MJU_LMS_USER_ID`
-- `MJU_LMS_PASSWORD`
 
 선택 환경 변수:
 

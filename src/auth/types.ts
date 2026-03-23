@@ -1,6 +1,10 @@
+export type StoredAuthMode =
+  | "windows-credential-manager"
+  | "macos-keychain";
+
 export interface StoredAuthProfile {
   userId: string;
-  authMode: "windows-credential-manager";
+  authMode: StoredAuthMode;
   createdAt: string;
   updatedAt: string;
   lastLoginAt: string;
@@ -9,7 +13,7 @@ export interface StoredAuthProfile {
 export interface ResolvedLmsCredentials {
   userId: string;
   password: string;
-  source: "env" | "os-store";
+  source: "os-store";
 }
 
 export interface LoginStoreResult {
@@ -27,12 +31,9 @@ export interface AuthStatus {
   credentialTarget?: string;
   profileExists: boolean;
   storedUserId?: string;
+  authMode?: StoredAuthMode;
   passwordStored: boolean;
   sessionFileExists: boolean;
-  envUserIdSet: boolean;
-  envPasswordSet: boolean;
-  envCredentialsReady: boolean;
-  envCredentialsPartial: boolean;
 }
 
 export interface LogoutResult {

@@ -6,19 +6,22 @@ import type { AppContext } from "../mcp/app-context.js";
 function formatAuthStatusText(result: {
   profileExists: boolean;
   storedUserId?: string;
+  authMode?: string;
   passwordStored: boolean;
   sessionFileExists: boolean;
-  envCredentialsReady: boolean;
 }): string {
   const lines = [
     `저장 로그인 정보: ${result.profileExists ? "있음" : "없음"}`,
     `저장 비밀번호: ${result.passwordStored ? "있음" : "없음"}`,
-    `저장 세션: ${result.sessionFileExists ? "있음" : "없음"}`,
-    `환경 변수 인증 준비: ${result.envCredentialsReady ? "완료" : "미설정"}`
+    `저장 세션: ${result.sessionFileExists ? "있음" : "없음"}`
   ];
 
   if (result.storedUserId) {
     lines.splice(1, 0, `저장된 아이디: ${result.storedUserId}`);
+  }
+
+  if (result.authMode) {
+    lines.splice(2, 0, `저장 방식: ${result.authMode}`);
   }
 
   return lines.join("\n");
@@ -117,12 +120,11 @@ export function registerAuthTools(
         credentialTarget: z.string().optional(),
         profileExists: z.boolean(),
         storedUserId: z.string().optional(),
+        authMode: z
+          .enum(["windows-credential-manager", "macos-keychain"])
+          .optional(),
         passwordStored: z.boolean(),
-        sessionFileExists: z.boolean(),
-        envUserIdSet: z.boolean(),
-        envPasswordSet: z.boolean(),
-        envCredentialsReady: z.boolean(),
-        envCredentialsPartial: z.boolean()
+        sessionFileExists: z.boolean()
       }
     },
     async () => {
@@ -144,7 +146,7 @@ export function registerAuthTools(
     {
       title: "저장 로그인 생성",
       description:
-        "아이디와 비밀번호로 SSO 로그인 후, 아이디는 프로필에 저장하고 비밀번호는 Windows Credential Manager에 저장합니다.",
+        "아이디와 비밀번호로 SSO 로그인 후, 아이디는 프로필에 저장하고 비밀번호는 현재 OS의 보안 저장소(Windows Credential Manager 또는 macOS Keychain)에 저장합니다.",
       inputSchema: {
         userId: z.string().describe("명지대 LMS 아이디입니다."),
         password: z.string().describe("명지대 LMS 비밀번호입니다.")
@@ -162,7 +164,7 @@ export function registerAuthTools(
         }),
         profile: z.object({
           userId: z.string(),
-          authMode: z.literal("windows-credential-manager"),
+          authMode: z.enum(["windows-credential-manager", "macos-keychain"]),
           createdAt: z.string(),
           updatedAt: z.string(),
           lastLoginAt: z.string()

@@ -15,7 +15,7 @@
 
 - 명지대 계열 통합 자격증명 재사용
 - 저장 세션 재사용
-- Windows Credential Manager 기반 저장 로그인
+- OS 보안 저장소 기반 저장 로그인
 - stdio 기반 MCP 서버
 - LMS 강의 식별 UX 개선
   - `course` 또는 `kjkey`
@@ -40,16 +40,11 @@ npm run build
 
 ### 2. 인증 준비
 
-권장 방식은 Windows 저장 로그인입니다.
+권장 방식은 OS 저장 로그인입니다.
 
 ```bash
 npm run auth:login -- --id YOUR_ID --password YOUR_PASSWORD
 ```
-
-대안으로 환경 변수를 써도 됩니다.
-
-- `MJU_LMS_USER_ID`
-- `MJU_LMS_PASSWORD`
 
 ### 3. 서버 실행
 

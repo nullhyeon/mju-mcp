@@ -35,7 +35,7 @@ flowchart LR
 ### `src/auth`
 
 - 저장 로그인 프로필 관리
-- Windows Credential Manager 연동
+- Windows Credential Manager / macOS Keychain 연동
 - 앱 데이터 경로 관리
 
 ### `src/lms`

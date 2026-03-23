@@ -53,8 +53,8 @@ export function resolveLmsRuntimeConfig(
 
   return {
     appDataDir,
-    userId: clean(overrides.userId ?? process.env.MJU_LMS_USER_ID),
-    password: clean(overrides.password ?? process.env.MJU_LMS_PASSWORD),
+    userId: clean(overrides.userId),
+    password: clean(overrides.password),
     profileFile: path.resolve(
       cleanPathValue(overrides.profileFile) ??
         cleanPathValue(process.env.MJU_LMS_PROFILE_FILE) ??

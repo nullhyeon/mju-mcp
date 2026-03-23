@@ -46,7 +46,7 @@ async function main(): Promise<void> {
 
   if (!config.userId || !config.password) {
     throw new Error(
-      "Missing LMS credentials. Provide --id/--password or set MJU_LMS_USER_ID and MJU_LMS_PASSWORD.\n\n" +
+      "Missing LMS credentials. Provide --id/--password.\n\n" +
         USAGE
     );
   }

@@ -12,7 +12,7 @@ const USAGE = [
   "",
   "Shared flags:",
   "  --app-dir                 Override local app data directory",
-  "  --service-name            Override Windows Credential Manager service name",
+  "  --service-name            Override OS credential store service name",
   "  --profile-file            Override profile json output path",
   "  --session-file            Override session json output path",
   "",

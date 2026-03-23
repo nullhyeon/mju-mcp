@@ -153,6 +153,8 @@ interface PowerShellCredentialDeleteResult {
 }
 
 export class WindowsCredentialVault implements PasswordVault {
+  readonly authMode = "windows-credential-manager" as const;
+
   constructor() {
     if (process.platform !== "win32") {
       throw new Error("Windows Credential Manager is only available on Windows.");
