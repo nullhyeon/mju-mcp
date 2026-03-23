@@ -21,6 +21,7 @@ import type {
   LibraryRoomReservationDetail
 } from "../library/types.js";
 import { requireCredentials } from "./credentials.js";
+import { registerLibrarySeatTools } from "./library-seats.js";
 
 const WRITE_APPROVAL_TTL_MS = 5 * 60 * 1000;
 
@@ -822,4 +823,6 @@ export function registerLibraryTools(
       };
     }
   );
+
+  registerLibrarySeatTools(server, context);
 }

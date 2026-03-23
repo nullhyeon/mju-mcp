@@ -66,6 +66,8 @@ flowchart LR
 - 도서관 세션 저장/재사용
 - 스터디룸 목록 / 상세 조회
 - 스터디룸 예약 / 수정 / 취소
+- 열람실 목록 / 상세 조회
+- 열람실 좌석 예약 목록 / 예약 / 취소
 - 동행자 이름+학번 -> 내부 patron id 해석
 
 ### `src/tools`
@@ -101,6 +103,7 @@ flowchart LR
 - `POST /pyxis-api/api/login` 으로 access token 발급
 - `Pyxis-Auth-Token` 헤더 기반 JSON API 호출
 - 도서관 전용 세션 파일 분리
+- 스터디룸과 열람실이 서로 다른 API 묶음을 사용하므로 서비스 파일을 분리하는 편이 유지보수에 좋음
 
 ## 4. 앱 컨텍스트
 

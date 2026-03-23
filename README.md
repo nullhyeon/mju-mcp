@@ -7,7 +7,7 @@
 - LMS: 강의, 공지, 과제, 자료, 온라인 학습, 첨부 다운로드, 집약형 요약, 과제 제출/수정/삭제
 - MSI: 수강과목시간표, 현재 학기 수강성적, 성적이력, 졸업학점 조회
 - UCheck: 과목별 출석현황 조회
-- Library: 도서관 스터디룸 목록/상세 조회, 내 예약 조회, 예약/수정/취소
+- Library: 도서관 스터디룸 목록/상세 조회, 내 예약 조회, 예약/수정/취소, 열람실 목록/상세 조회, 좌석 예약 조회/예약/취소(임시배정까지)
 
 읽기 기능이 중심이지만, LMS 과제 제출/수정/삭제와 도서관 스터디룸 예약/수정/취소처럼 실제 상태를 바꾸는 기능도 일부 지원합니다. 쓰기 tool은 모두 보수적인 승인 흐름을 거칩니다.
 
@@ -24,6 +24,7 @@
   - `confirm=true`
   - `approvalToken`
 - 도서관 스터디룸 동행자 이름/학번 -> 내부 patron id 자동 해석
+- 도서관 열람실 좌석 목록/예약 가능 구간 조회
 - LMS, MSI, UCheck, Library 세션 분리 저장
 
 ## 빠른 시작
@@ -119,6 +120,11 @@ npm run login:sso -- --id YOUR_ID --password YOUR_PASSWORD
 - `mju_library_reserve_study_room`
 - `mju_library_update_study_room_reservation`
 - `mju_library_cancel_study_room_reservation`
+- `mju_library_list_reading_rooms`
+- `mju_library_get_reading_room`
+- `mju_library_list_seat_reservations`
+- `mju_library_reserve_seat`
+- `mju_library_cancel_seat_reservation`
 
 ## 저장 위치
 
@@ -141,7 +147,8 @@ npm run login:sso -- --id YOUR_ID --password YOUR_PASSWORD
 ## 안전장치
 
 - LMS 제출/수정/삭제는 `confirm=true` 와 승인 토큰이 모두 필요합니다.
-- 도서관 스터디룸 예약/수정/취소도 `confirm=true` 와 승인 토큰이 모두 필요합니다.
+- 도서관 스터디룸 예약/수정/취소와 열람실 좌석 예약/취소도 `confirm=true` 와 승인 토큰이 모두 필요합니다.
+- 도서관 열람실은 좌석 예약 후 `임시배정` 까지만 자동화하고, 실제 입실 확인은 NFC 기반이라 현재 범위에 포함하지 않습니다.
 - 문서와 커밋에는 실계정 비밀번호, 세션 파일, 스냅샷 HTML을 넣지 않습니다.
 - 실데이터 검증은 가능하지만, 운영 상태를 바꾸는 호출은 항상 신중하게 수행해야 합니다.
 

@@ -50,6 +50,141 @@ export interface LibraryCampusAvailability {
   rooms: LibraryStudyRoomSummary[];
 }
 
+export interface LibrarySeatCounts {
+  total: number;
+  occupied: number;
+  waiting: number;
+  available: number;
+}
+
+export interface LibraryReadingRoomSummary {
+  roomId: number;
+  roomName: string;
+  roomTypeId?: number;
+  roomTypeName?: string;
+  branchId?: number;
+  branchName?: string;
+  branchAlias?: string;
+  isChargeable: boolean;
+  unableMessage?: string;
+  seats: LibrarySeatCounts;
+}
+
+export interface LibraryReadingRoomCampusAvailability {
+  campus: LibraryCampusKey;
+  branchGroupId: number;
+  branchName: string;
+  branchAlias: string;
+  rooms: LibraryReadingRoomSummary[];
+}
+
+export interface LibrarySeatType {
+  id: number;
+  name: string;
+}
+
+export interface LibrarySeatReservableDate {
+  date: string;
+  beginTime: string;
+  endTime: string;
+}
+
+export interface LibrarySeatSummary {
+  seatId: number;
+  roomId?: number;
+  roomName?: string;
+  seatCode: string;
+  isActive: boolean;
+  isReservable: boolean;
+  isOccupied: boolean;
+  remainingTime: number;
+  chargeTime: number;
+}
+
+export interface LibrarySeatChargeableHour {
+  id: number;
+  isAllDayOpen: boolean;
+  beginTime: string;
+  endTime: string;
+  minUseTime: number;
+  maxUseTime: number;
+  defaultUseTime: number;
+}
+
+export interface LibrarySeatDetail {
+  seatId: number;
+  seatCode: string;
+  roomId: number;
+  roomName: string;
+  companionCount: number;
+  isOccupied: boolean;
+  isFavoriteSeat: boolean;
+  hasTimeline: boolean;
+  chargeableHour?: LibrarySeatChargeableHour;
+}
+
+export interface LibraryReadingRoomDetail {
+  roomId: number;
+  roomName: string;
+  description?: string;
+  attention?: string;
+  reservable: boolean;
+  reservableDates: LibrarySeatReservableDate[];
+  seatTypes: LibrarySeatType[];
+  seats: LibrarySeatSummary[];
+  hopeDate: string;
+  totalSeatCount: number;
+  occupiedSeatCount: number;
+  reservableSeatCount: number;
+}
+
+export interface LibrarySeatReservationSummary {
+  reservationId: number;
+  roomId: number;
+  roomName: string;
+  seatId: number;
+  seatCode: string;
+  reservationTime: string;
+  beginTime: string;
+  endTime: string;
+  stateCode?: string;
+  stateLabel?: string;
+  isCheckinable: boolean;
+  checkinExpiryDate?: string;
+  arrivalConfirmMethods: string[];
+  isReturnable: boolean;
+  isRenewable: boolean;
+  renewalLimit?: number;
+  renewableCount?: number;
+  dateCreated?: string;
+}
+
+export interface LibrarySeatReservationRequestInput {
+  roomId: number;
+  seatId: number;
+}
+
+export interface LibrarySeatReservationPreview {
+  roomId: number;
+  roomName: string;
+  seatId: number;
+  seatCode: string;
+  beginTime: string;
+  endTime: string;
+  reservationTime: string;
+  approvalWarnings: string[];
+  chargeableHour?: LibrarySeatChargeableHour;
+}
+
+export interface LibrarySeatReservationResult
+  extends LibrarySeatReservationPreview {
+  reservationId: number;
+  stateCode?: string;
+  stateLabel?: string;
+  checkinExpiryDate?: string;
+  arrivalConfirmMethods: string[];
+}
+
 export interface LibraryUseSection {
   id: number;
   code: string;

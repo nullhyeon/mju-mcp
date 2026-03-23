@@ -155,6 +155,17 @@ npm run dev
 }
 ```
 
+### Library 열람실 목록
+
+```json
+{
+  "name": "mju_library_list_reading_rooms",
+  "arguments": {
+    "campus": "nature"
+  }
+}
+```
+
 ## 7. 문제 해결
 
 ### 로그인은 되는데 이후 호출이 실패할 때
