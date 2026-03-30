@@ -23,11 +23,24 @@ npm run build
 
 ### 2. 인증 준비
 
-권장 방식은 OS 저장 로그인입니다.
+#### 방법 A: 환경변수 (Linux 컨테이너 / CI 권장)
+
+```bash
+export MJU_USERNAME=YOUR_ID
+export MJU_PASSWORD=YOUR_PASSWORD
+```
+
+환경변수가 설정되어 있으면 OS 키체인 없이 모든 서비스(LMS, MSI, UCheck, Library)에 인증됩니다.
+
+#### 방법 B: OS 저장 로그인 (macOS / Windows)
 
 ```bash
 npm run auth:login -- --id YOUR_ID --password YOUR_PASSWORD
 ```
+
+비밀번호는 macOS Keychain 또는 Windows Credential Manager에 저장됩니다.
+
+환경변수와 저장 로그인이 동시에 존재하면 환경변수가 우선합니다.
 
 ### 3. 서버 실행
 

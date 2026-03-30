@@ -36,13 +36,15 @@ class UnsupportedPasswordVault implements PasswordVault {
 
   async savePassword(): Promise<void> {
     throw new Error(
-      "저장 로그인은 현재 Windows Credential Manager 또는 macOS Keychain 기반으로만 지원됩니다."
+      "저장 로그인은 현재 Windows Credential Manager 또는 macOS Keychain 기반으로만 지원됩니다. " +
+      "Linux 환경에서는 MJU_USERNAME / MJU_PASSWORD 환경변수를 사용해주세요."
     );
   }
 
   async getPassword(): Promise<string | null> {
     throw new Error(
-      "저장된 비밀번호 읽기는 현재 Windows Credential Manager 또는 macOS Keychain 기반으로만 지원됩니다."
+      "저장된 비밀번호 읽기는 현재 Windows Credential Manager 또는 macOS Keychain 기반으로만 지원됩니다. " +
+      "Linux 환경에서는 MJU_USERNAME / MJU_PASSWORD 환경변수를 사용해주세요."
     );
   }
 
@@ -65,6 +67,16 @@ function createDefaultPasswordVault(): PasswordVault {
   }
 
   return new UnsupportedPasswordVault();
+}
+
+function resolveEnvironmentCredentials(): ResolvedLmsCredentials | null {
+  const userId = clean(process.env.MJU_USERNAME);
+  const password = clean(process.env.MJU_PASSWORD);
+  if (userId && password) {
+    return { userId, password, source: "environment" };
+  }
+
+  return null;
 }
 
 function resolveStoredAuthMode(vault: PasswordVault): StoredAuthMode {
@@ -96,10 +108,17 @@ export class AuthManager {
   }
 
   async resolveCredentials(): Promise<ResolvedLmsCredentials> {
+    const envCredentials = resolveEnvironmentCredentials();
+    if (envCredentials) {
+      return envCredentials;
+    }
+
     const profile = await this.profileStore.load();
     if (!profile) {
       throw new Error(
-        "저장된 로그인 정보가 없습니다. `npm run auth:login -- --id YOUR_ID --password YOUR_PASSWORD` 로 먼저 로그인해주세요."
+        "저장된 로그인 정보가 없습니다. " +
+        "`npm run auth:login -- --id YOUR_ID --password YOUR_PASSWORD` 로 먼저 로그인하거나, " +
+        "MJU_USERNAME / MJU_PASSWORD 환경변수를 설정해주세요."
       );
     }
 
@@ -108,7 +127,9 @@ export class AuthManager {
     );
     if (password === null) {
       throw new Error(
-        "저장된 비밀번호를 읽지 못했습니다. `npm run auth:login -- --id YOUR_ID --password YOUR_PASSWORD` 로 다시 로그인해주세요."
+        "저장된 비밀번호를 읽지 못했습니다. " +
+        "`npm run auth:login -- --id YOUR_ID --password YOUR_PASSWORD` 로 다시 로그인하거나, " +
+        "MJU_USERNAME / MJU_PASSWORD 환경변수를 설정해주세요."
       );
     }
 
@@ -174,6 +195,7 @@ export class AuthManager {
   }
 
   async status(): Promise<AuthStatus> {
+    const envCredentials = resolveEnvironmentCredentials();
     const profile = await this.profileStore.load();
     const sessionFileExists = await fileExists(this.config.sessionFile);
 
@@ -194,7 +216,9 @@ export class AuthManager {
         credentialTarget !== undefined
           ? await this.passwordVault.hasPassword(credentialTarget)
           : false,
-      sessionFileExists
+      sessionFileExists,
+      environmentCredentials: envCredentials !== null,
+      ...(envCredentials ? { environmentUserId: envCredentials.userId } : {})
     };
   }
 

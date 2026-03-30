@@ -81,6 +81,13 @@ flowchart LR
 
 ## 3. 인증 구조
 
+### 크리덴셜 해석 우선순위
+
+1. `MJU_USERNAME` / `MJU_PASSWORD` 환경변수 (둘 다 있으면 즉시 사용, OS 키체인 접근 없음)
+2. 저장 로그인 (프로필 파일 + OS 키체인)
+
+이 우선순위는 `AuthManager.resolveCredentials()` 에서 처리되며, 모든 서비스가 같은 경로를 공유합니다.
+
 ### LMS
 
 - 명지대 SSO entry URL 직접 사용

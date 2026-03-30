@@ -9,19 +9,26 @@ function formatAuthStatusText(result: {
   authMode?: string;
   passwordStored: boolean;
   sessionFileExists: boolean;
+  environmentCredentials: boolean;
+  environmentUserId?: string;
 }): string {
   const lines = [
+    `환경변수 크리덴셜: ${result.environmentCredentials ? "있음" : "없음"}`,
     `저장 로그인 정보: ${result.profileExists ? "있음" : "없음"}`,
     `저장 비밀번호: ${result.passwordStored ? "있음" : "없음"}`,
     `저장 세션: ${result.sessionFileExists ? "있음" : "없음"}`
   ];
 
+  if (result.environmentUserId) {
+    lines.splice(1, 0, `환경변수 아이디: ${result.environmentUserId}`);
+  }
+
   if (result.storedUserId) {
-    lines.splice(1, 0, `저장된 아이디: ${result.storedUserId}`);
+    lines.push(`저장된 아이디: ${result.storedUserId}`);
   }
 
   if (result.authMode) {
-    lines.splice(2, 0, `저장 방식: ${result.authMode}`);
+    lines.push(`저장 방식: ${result.authMode}`);
   }
 
   return lines.join("\n");
@@ -124,7 +131,9 @@ export function registerAuthTools(
           .enum(["windows-credential-manager", "macos-keychain"])
           .optional(),
         passwordStored: z.boolean(),
-        sessionFileExists: z.boolean()
+        sessionFileExists: z.boolean(),
+        environmentCredentials: z.boolean(),
+        environmentUserId: z.string().optional()
       }
     },
     async () => {

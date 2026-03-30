@@ -1,0 +1,25 @@
+{
+  "id": "mju-mcp",
+  "name": "MJU MCP",
+  "version": "0.1.0",
+  "description": "명지대학교 LMS, MSI, UCheck, Library 서비스를 MCP tool로 노출하는 플러그인",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string",
+        "description": "명지대 아이디 (MJU_USERNAME 환경변수 대체 가능)"
+      },
+      "password": {
+        "type": "string",
+        "description": "명지대 비밀번호 (MJU_PASSWORD 환경변수 대체 가능)"
+      },
+      "appDataDir": {
+        "type": "string",
+        "description": "앱 데이터 저장 경로 (MJU_LMS_APP_DIR 환경변수 대체 가능)",
+        "default": "/sandbox/mju-mcp"
+      }
+    },
+    "additionalProperties": false
+  }
+}

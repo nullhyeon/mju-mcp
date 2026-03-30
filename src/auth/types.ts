@@ -13,7 +13,7 @@ export interface StoredAuthProfile {
 export interface ResolvedLmsCredentials {
   userId: string;
   password: string;
-  source: "os-store";
+  source: "os-store" | "environment";
 }
 
 export interface LoginStoreResult {
@@ -34,6 +34,8 @@ export interface AuthStatus {
   authMode?: StoredAuthMode;
   passwordStored: boolean;
   sessionFileExists: boolean;
+  environmentCredentials: boolean;
+  environmentUserId?: string;
 }
 
 export interface LogoutResult {

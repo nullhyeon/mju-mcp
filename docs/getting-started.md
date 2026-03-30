@@ -6,9 +6,10 @@
 
 - Node.js 22 이상
 - npm
-- Windows 또는 macOS
+- Windows, macOS, 또는 Linux
 
-Windows에서는 Windows Credential Manager, macOS에서는 Keychain을 사용합니다.
+macOS에서는 Keychain, Windows에서는 Credential Manager를 사용합니다.
+Linux에서는 `MJU_USERNAME` / `MJU_PASSWORD` 환경변수로 인증합니다.
 
 ## 2. 설치
 
@@ -22,11 +23,21 @@ npm run build
 
 ## 3. 인증 방식
 
-지원하는 인증 방식은 저장 로그인입니다.
+### 3.1 환경변수 인증 (Linux / 컨테이너 / CI)
 
-### 3.1 저장 로그인
+OS 키체인이 없는 환경에서 권장하는 방식입니다.
 
-가장 권장하는 방식입니다.
+```bash
+export MJU_USERNAME=YOUR_ID
+export MJU_PASSWORD=YOUR_PASSWORD
+```
+
+두 환경변수가 모두 설정되어 있으면 OS 키체인 없이 모든 서비스에 인증됩니다.
+저장 로그인과 동시에 존재하면 환경변수가 우선합니다.
+
+### 3.2 저장 로그인 (macOS / Windows)
+
+데스크톱 환경에서 권장하는 방식입니다.
 
 ```bash
 npm run auth:login -- --id YOUR_ID --password YOUR_PASSWORD
@@ -34,12 +45,12 @@ npm run auth:login -- --id YOUR_ID --password YOUR_PASSWORD
 
 이 방식의 저장 위치는 다음과 같습니다.
 
-- 아이디: `%LOCALAPPDATA%\\mju-mcp\\state\\profile.json`
+- 아이디: 로컬 프로필 파일 (기본 `~/.mju-mcp/state/profile.json`, Windows는 `%LOCALAPPDATA%\mju-mcp\state\profile.json`)
 - 비밀번호: Windows Credential Manager 또는 macOS Keychain
-- LMS 세션: `%LOCALAPPDATA%\\mju-mcp\\state\\lms-session.json`
-- MSI 세션: `%LOCALAPPDATA%\\mju-mcp\\state\\msi-session.json`
-- UCheck 세션: `%LOCALAPPDATA%\\mju-mcp\\state\\ucheck-session.json`
-- Library 세션: `%LOCALAPPDATA%\\mju-mcp\\state\\library-session.json`
+- LMS 세션: `state/lms-session.json`
+- MSI 세션: `state/msi-session.json`
+- UCheck 세션: `state/ucheck-session.json`
+- Library 세션: `state/library-session.json`
 
 상태 확인:
 
@@ -59,7 +70,14 @@ npm run auth:logout
 npm run auth:forget
 ```
 
-선택 환경 변수:
+### 선택 환경 변수
+
+인증:
+
+- `MJU_USERNAME` — 환경변수 인증 아이디
+- `MJU_PASSWORD` — 환경변수 인증 비밀번호
+
+경로 및 설정:
 
 - `MJU_LMS_APP_DIR`
 - `MJU_LMS_PROFILE_FILE`

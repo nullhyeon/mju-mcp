@@ -4,6 +4,11 @@
   "private": true,
   "description": "MCP server workspace for MJU services",
   "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./dist/plugin.js"
+    ]
+  },
   "engines": {
     "node": ">=22.0.0"
   },
